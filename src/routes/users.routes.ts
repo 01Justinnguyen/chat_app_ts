@@ -1,11 +1,9 @@
 import { Request, Response, Router } from 'express'
+import { registerController } from '~/controllers/users.controller'
+import { registerMiddleware } from '~/middlewares/users.middleware'
 
 const usersRouter = Router()
 
-usersRouter.get('/', (req: Request, res: Response) => {
-  return res.json({
-    message: 'This is user'
-  })
-})
+usersRouter.post('/register', registerMiddleware, registerController)
 
 export default usersRouter
