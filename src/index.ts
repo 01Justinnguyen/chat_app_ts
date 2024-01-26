@@ -1,11 +1,10 @@
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { config } from 'dotenv'
 import cors from 'cors'
 import usersRouter from './routes/users.routes'
 import database from './services/database.services'
-import { errorsHandler } from './utils/errorsHandler'
+import { defaultErrorsHandler } from './middlewares/errors.middleware'
 config()
-database.connect()
 const app = express()
 const PORT = process.env.PORT || 8888
 
@@ -18,12 +17,11 @@ app.use(
   })
 )
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+database.connect()
 
 app.use('/users', usersRouter)
-app.use(errorsHandler)
+
+app.use(defaultErrorsHandler)
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`)
