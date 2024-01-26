@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { CLIENT_MESSAGE } from '~/constants/messages'
+import { ErrorWithStatus } from '~/models/Errors'
 import userService from '~/services/users.services'
 import { validate } from '~/utils/validator'
 
