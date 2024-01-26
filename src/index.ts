@@ -3,6 +3,7 @@ import { config } from 'dotenv'
 import cors from 'cors'
 import usersRouter from './routes/users.routes'
 import database from './services/database.services'
+import { errorsHandler } from './utils/errorsHandler'
 config()
 database.connect()
 const app = express()
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/users', usersRouter)
+app.use(errorsHandler)
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`)
