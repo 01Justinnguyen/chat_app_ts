@@ -4,3 +4,8 @@ export interface RegisterRequestBody {
   password: string
   date_of_birth: string
 }
+
+export interface LoginRequestBody {
+  email: string
+  password: string
+}

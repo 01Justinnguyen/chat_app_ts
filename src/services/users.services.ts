@@ -55,6 +55,22 @@ class UserService {
     const result = await database.user.findOne({ email })
     return Boolean(result)
   }
+
+  async login(user_id: string) {
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+
+    await database.refreshToken.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: refresh_token
+      })
+    )
+
+    return {
+      access_token,
+      refresh_token
+    }
+  }
 }
 
 const userService = new UserService()
