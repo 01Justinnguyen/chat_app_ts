@@ -7,6 +7,7 @@ import { TokenType } from '~/constants/enum'
 import { config } from 'dotenv'
 import { RefreshToken } from '~/models/schemas/RefreshToken.schema'
 import { ObjectId } from 'mongodb'
+import { CLIENT_MESSAGE } from '~/constants/messages'
 config()
 
 class UserService {
@@ -69,6 +70,14 @@ class UserService {
     return {
       access_token,
       refresh_token
+    }
+  }
+
+  async logout(refresh_token: string) {
+    await database.refreshToken.deleteOne({ token: refresh_token })
+
+    return {
+      message: CLIENT_MESSAGE.LOGIN_SUCCESS
     }
   }
 }

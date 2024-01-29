@@ -1,60 +1,67 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
+import HTTP_STATUS from '~/constants/httpStatus'
 import { CLIENT_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import database from '~/services/database.services'
 import userService from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto'
+import { verifyToken } from '~/utils/jwt'
 import { validate } from '~/utils/validator'
+import jwt, { JsonWebTokenError } from 'jsonwebtoken'
+import { capitalize } from 'lodash'
 
 export const loginMiddleware = validate(
-  checkSchema({
-    email: {
-      notEmpty: {
-        errorMessage: CLIENT_MESSAGE.EMAIL_IS_REQUIRED
-      },
-      trim: true,
-      isEmail: {
-        errorMessage: CLIENT_MESSAGE.EMAIL_IS_INVALID
-      },
-      custom: {
-        options: async (value, { req }) => {
-          const user = await database.user.findOne({ email: value, password: hashPassword(req.body.password) })
-          if (user === null) {
-            throw new Error(CLIENT_MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT)
+  checkSchema(
+    {
+      email: {
+        notEmpty: {
+          errorMessage: CLIENT_MESSAGE.EMAIL_IS_REQUIRED
+        },
+        trim: true,
+        isEmail: {
+          errorMessage: CLIENT_MESSAGE.EMAIL_IS_INVALID
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const user = await database.user.findOne({ email: value, password: hashPassword(req.body.password) })
+            if (user === null) {
+              throw new Error(CLIENT_MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT)
+            }
+            req.user = user
+            return true
           }
-          req.user = user
-          return true
+        }
+      },
+      password: {
+        notEmpty: {
+          errorMessage: CLIENT_MESSAGE.PASSWORD_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: CLIENT_MESSAGE.PASSWORD_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 50
+          },
+          errorMessage: CLIENT_MESSAGE.PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1
+          },
+          errorMessage: CLIENT_MESSAGE.PASSWORD_MUST_BE_STRONG
         }
       }
     },
-    password: {
-      notEmpty: {
-        errorMessage: CLIENT_MESSAGE.PASSWORD_IS_REQUIRED
-      },
-      isString: {
-        errorMessage: CLIENT_MESSAGE.PASSWORD_MUST_BE_A_STRING
-      },
-      trim: true,
-      isLength: {
-        options: {
-          min: 6,
-          max: 50
-        },
-        errorMessage: CLIENT_MESSAGE.PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50
-      },
-      isStrongPassword: {
-        options: {
-          minLength: 6,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1
-        },
-        errorMessage: CLIENT_MESSAGE.PASSWORD_MUST_BE_STRONG
-      }
-    }
-  })
+    ['body']
+  )
 )
 
 export const registerMiddleware = validate(
@@ -159,6 +166,90 @@ export const registerMiddleware = validate(
         },
         isISO8601: {
           errorMessage: CLIENT_MESSAGE.DATE_OF_BIRTH_MUST_BE_ISO8601
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const accessTokenValidator = validate(
+  checkSchema(
+    {
+      Authorization: {
+        notEmpty: {
+          errorMessage: CLIENT_MESSAGE.ACCESS_TOKEN_IS_REQUIRED
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            try {
+              const access_token = value.split(' ')[1]
+              if (access_token === undefined) {
+                // Nếu không có access_token thì throw lỗi required
+                throw new ErrorWithStatus({
+                  message: CLIENT_MESSAGE.ACCESS_TOKEN_IS_REQUIRED,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              const decoded_authorization = await verifyToken({ token: access_token })
+              ;(req as Request).decoded_authorization = decoded_authorization
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize(error.message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              } else {
+                throw error
+              }
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        notEmpty: {
+          errorMessage: CLIENT_MESSAGE.REFRESH_TOKEN_IS_REQUIRED
+        },
+        isString: {
+          errorMessage: CLIENT_MESSAGE.REFRESH_TOKEN_MUST_BE_A_STRING
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            try {
+              const [decoded_refresh_token, refresh_token] = await Promise.all([
+                verifyToken({
+                  token: value
+                }),
+                database.refreshToken.findOne({ token: value })
+              ])
+              if (refresh_token === null) {
+                throw new ErrorWithStatus({
+                  message: CLIENT_MESSAGE.USED_REFRESH_TOKEN_OR_NOT_EXIST,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              ;(req as Request).decoded_refresh_token = decoded_refresh_token
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize(error.message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              } else {
+                throw error
+              }
+            }
+            return true
+          }
         }
       }
     },
