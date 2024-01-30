@@ -2,7 +2,13 @@ import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
 import { CLIENT_MESSAGE } from '~/constants/messages'
-import { LoginRequestBody, LogoutRequestBody, RegisterRequestBody } from '~/models/requests/User.requests'
+import {
+  LoginRequestBody,
+  LogoutRequestBody,
+  RegisterRequestBody,
+  TokenPayload,
+  refreshTokenRequestBody
+} from '~/models/requests/User.requests'
 import { User } from '~/models/schemas/User.schema'
 import userService from '~/services/users.services'
 
@@ -29,4 +35,18 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   const { refresh_token } = req.body
   const result = await userService.logout(refresh_token)
   return res.json(result)
+}
+
+export const refreshTokenController = async (
+  req: Request<ParamsDictionary, any, refreshTokenRequestBody>,
+  res: Response
+) => {
+  const { refresh_token } = req.body
+  const { user_id } = req.decoded_refresh_token as TokenPayload
+  const result = await userService.refreshToken({ user_id, refresh_token })
+
+  return res.json({
+    message: CLIENT_MESSAGE.REFRESH_TOKEN_SUCCESS,
+    result
+  })
 }
