@@ -75,9 +75,27 @@ class UserService {
 
   async logout(refresh_token: string) {
     await database.refreshToken.deleteOne({ token: refresh_token })
-
     return {
       message: CLIENT_MESSAGE.LOGIN_SUCCESS
+    }
+  }
+
+  async refreshToken({ user_id, refresh_token }: { user_id: string; refresh_token: string }) {
+    const [new_access_token, new_refresh_token] = await Promise.all([
+      this.signAccessToken(user_id),
+      this.signRefreshToken(user_id),
+      database.refreshToken.deleteOne({ token: refresh_token })
+    ])
+    await database.refreshToken.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: new_refresh_token
+      })
+    )
+
+    return {
+      new_access_token,
+      new_refresh_token
     }
   }
 }
