@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
+import { UserVerifyStatus } from '~/constants/enum'
+import HTTP_STATUS from '~/constants/httpStatus'
 import { CLIENT_MESSAGE } from '~/constants/messages'
 import {
   LoginRequestBody,
@@ -10,6 +12,7 @@ import {
   refreshTokenRequestBody
 } from '~/models/requests/User.requests'
 import { User } from '~/models/schemas/User.schema'
+import database from '~/services/database.services'
 import userService from '~/services/users.services'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterRequestBody>, res: Response) => {
@@ -47,6 +50,28 @@ export const refreshTokenController = async (
 
   return res.json({
     message: CLIENT_MESSAGE.REFRESH_TOKEN_SUCCESS,
+    result
+  })
+}
+
+export const verifyEmailTokenController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_email_verify_token as TokenPayload
+
+  const user = await database.users.findOne({ _id: new ObjectId(user_id) })
+  if (!user) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: CLIENT_MESSAGE.USER_NOT_FOUND
+    })
+  }
+  if (user.email_verify_token === '' && user.verify === UserVerifyStatus.Verified) {
+    return res.status(HTTP_STATUS.OK).json({
+      message: CLIENT_MESSAGE.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+
+  const result = await userService.verifyEmail(user_id)
+  return res.json({
+    message: CLIENT_MESSAGE.EMAIL_VERIFY_SUCCESS,
     result
   })
 }

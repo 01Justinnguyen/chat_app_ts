@@ -24,7 +24,7 @@ export const loginMiddleware = validate(
         },
         custom: {
           options: async (value, { req }) => {
-            const user = await database.user.findOne({ email: value, password: hashPassword(req.body.password) })
+            const user = await database.users.findOne({ email: value, password: hashPassword(req.body.password) })
             if (user === null) {
               throw new Error(CLIENT_MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT)
             }
@@ -177,11 +177,15 @@ export const accessTokenValidator = validate(
   checkSchema(
     {
       Authorization: {
-        notEmpty: {
-          errorMessage: CLIENT_MESSAGE.ACCESS_TOKEN_IS_REQUIRED
-        },
+        trim: true,
         custom: {
           options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: CLIENT_MESSAGE.ACCESS_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
             try {
               const access_token = value.split(' ')[1]
               if (access_token === undefined) {
@@ -191,7 +195,10 @@ export const accessTokenValidator = validate(
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
-              const decoded_authorization = await verifyToken({ token: access_token })
+              const decoded_authorization = await verifyToken({
+                token: access_token,
+                secretOrPublicKey: process.env.SECRET_JWT_ACCESS_TOKEN_KEY as string
+              })
               ;(req as Request).decoded_authorization = decoded_authorization
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
@@ -216,18 +223,20 @@ export const refreshTokenValidator = validate(
   checkSchema(
     {
       refresh_token: {
-        notEmpty: {
-          errorMessage: CLIENT_MESSAGE.REFRESH_TOKEN_IS_REQUIRED
-        },
-        isString: {
-          errorMessage: CLIENT_MESSAGE.REFRESH_TOKEN_MUST_BE_A_STRING
-        },
+        trim: true,
         custom: {
           options: async (value: string, { req }) => {
             try {
+              if (!value) {
+                throw new ErrorWithStatus({
+                  message: CLIENT_MESSAGE.REFRESH_TOKEN_IS_REQUIRED,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
               const [decoded_refresh_token, refresh_token] = await Promise.all([
                 verifyToken({
-                  token: value
+                  token: value,
+                  secretOrPublicKey: process.env.SECRET_JWT_REFRESH_TOKEN_KEY as string
                 }),
                 database.refreshToken.findOne({ token: value })
               ])
@@ -238,6 +247,44 @@ export const refreshTokenValidator = validate(
                 })
               }
               ;(req as Request).decoded_refresh_token = decoded_refresh_token
+            } catch (error) {
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: capitalize(error.message),
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              } else {
+                throw error
+              }
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const emailVerifyTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            try {
+              if (!value) {
+                throw new ErrorWithStatus({
+                  message: CLIENT_MESSAGE.REFRESH_TOKEN_IS_REQUIRED,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: process.env.SECRET_JWT_EMAIL_VERIFY_TOKEN_KEY as string
+              })
+              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({
