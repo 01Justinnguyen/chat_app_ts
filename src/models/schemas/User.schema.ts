@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enum'
 
 interface UserType {
-  _id?: ObjectId
+  _id: ObjectId
   name: string
   email: string
   date_of_birth: Date
@@ -21,7 +21,7 @@ interface UserType {
   cover_photo?: string // optional
 }
 export class User {
-  _id?: ObjectId
+  _id: ObjectId
   name: string
   email: string
   date_of_birth: Date
