@@ -7,9 +7,10 @@ import { CLIENT_MESSAGE } from '~/constants/messages'
 import {
   LoginRequestBody,
   LogoutRequestBody,
+  RefreshTokenRequestBody,
   RegisterRequestBody,
   TokenPayload,
-  refreshTokenRequestBody
+  VerifyEmailRequestBody
 } from '~/models/requests/User.requests'
 import { User } from '~/models/schemas/User.schema'
 import database from '~/services/database.services'
@@ -41,7 +42,7 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 }
 
 export const refreshTokenController = async (
-  req: Request<ParamsDictionary, any, refreshTokenRequestBody>,
+  req: Request<ParamsDictionary, any, RefreshTokenRequestBody>,
   res: Response
 ) => {
   const { refresh_token } = req.body
@@ -54,7 +55,10 @@ export const refreshTokenController = async (
   })
 }
 
-export const verifyEmailTokenController = async (req: Request, res: Response) => {
+export const verifyEmailTokenController = async (
+  req: Request<ParamsDictionary, any, VerifyEmailRequestBody>,
+  res: Response
+) => {
   const { user_id } = req.decoded_email_verify_token as TokenPayload
 
   const user = await database.users.findOne({ _id: new ObjectId(user_id) })
@@ -74,4 +78,23 @@ export const verifyEmailTokenController = async (req: Request, res: Response) =>
     message: CLIENT_MESSAGE.EMAIL_VERIFY_SUCCESS,
     result
   })
+}
+
+export const resendEmailVerifyController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const user = await database.users.findOne({ _id: new ObjectId(user_id) })
+
+  if (!user) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: CLIENT_MESSAGE.USER_NOT_FOUND
+    })
+  }
+  if (user.email_verify_token === '' && user.verify === UserVerifyStatus.Verified) {
+    return res.status(HTTP_STATUS.OK).json({
+      message: CLIENT_MESSAGE.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+  const { _id } = user
+  const result = await userService.resendEmailVerifyToken(_id.toString())
+  return res.json(result)
 }
