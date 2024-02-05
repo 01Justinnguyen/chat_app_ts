@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enum'
@@ -10,6 +10,7 @@ import {
   LogoutRequestBody,
   RefreshTokenRequestBody,
   RegisterRequestBody,
+  ResetPasswordRequestBody,
   TokenPayload,
   VerifyEmailRequestBody,
   VerifyForgotPasswordTokenRequestBody
@@ -117,4 +118,15 @@ export const verifyForgotPasswordTokenController = async (
   return res.json({
     message: CLIENT_MESSAGE.VERIFY_FORGOT_PASSWORD_SUCCESS
   })
+}
+
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
+  res: Response
+) => {
+  const { password } = req.body
+  const { user_id } = req.decoded_forgot_password_token as TokenPayload
+  const result = await userService.resetPassword(password, user_id)
+
+  return res.json(result)
 }
