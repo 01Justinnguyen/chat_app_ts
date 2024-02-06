@@ -8,6 +8,8 @@ import { config } from 'dotenv'
 import { RefreshToken } from '~/models/schemas/RefreshToken.schema'
 import { ObjectId } from 'mongodb'
 import { CLIENT_MESSAGE } from '~/constants/messages'
+import { ErrorWithStatus } from '~/models/Errors'
+import HTTP_STATUS from '~/constants/httpStatus'
 config()
 
 class UserService {
@@ -201,6 +203,31 @@ class UserService {
 
     return {
       message: CLIENT_MESSAGE.RESET_PASSWORD_SUCCESS
+    }
+  }
+
+  async getProfile(user_id: string) {
+    const user = await database.users.findOne(
+      { _id: new ObjectId(user_id) },
+      {
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          created_at: 0,
+          updated_at: 0
+        }
+      }
+    )
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: CLIENT_MESSAGE.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    return {
+      user,
+      message: CLIENT_MESSAGE.GET_PROFILE_SUCCESS
     }
   }
 }
