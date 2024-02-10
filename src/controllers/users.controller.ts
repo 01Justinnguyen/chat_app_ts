@@ -29,8 +29,9 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginRequestBody>, res: Response) => {
   const user = req.user as User
+  const { verify } = user
   const user_id = user._id as ObjectId
-  const result = await userService.login(user_id.toString())
+  const result = await userService.login({ user_id: user_id.toString(), verify })
 
   return res.json({
     message: CLIENT_MESSAGE.LOGIN_SUCCESS,
@@ -49,8 +50,8 @@ export const refreshTokenController = async (
   res: Response
 ) => {
   const { refresh_token } = req.body
-  const { user_id } = req.decoded_refresh_token as TokenPayload
-  const result = await userService.refreshToken({ user_id, refresh_token })
+  const { user_id, verify } = req.decoded_refresh_token as TokenPayload
+  const result = await userService.refreshToken({ user_id, refresh_token, verify })
 
   return res.json({
     message: CLIENT_MESSAGE.REFRESH_TOKEN_SUCCESS,
@@ -106,8 +107,8 @@ export const forgotPasswordController = async (
   req: Request<ParamsDictionary, any, ForgotPasswordRequestBody>,
   res: Response
 ) => {
-  const { _id } = req.user as User
-  const result = await userService.forgotPassword({ user_id: _id.toString() })
+  const { _id, verify } = req.user as User
+  const result = await userService.forgotPassword({ user_id: _id.toString(), verify })
   return res.json(result)
 }
 
@@ -136,3 +137,5 @@ export const getProfileController = async (req: Request, res: Response) => {
   const result = await userService.getProfile(user_id)
   return res.json(result)
 }
+
+export const updateMyProfileController = async (req: Request, res: Response) => {}
