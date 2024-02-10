@@ -1,4 +1,4 @@
-import { RegisterRequestBody } from '~/models/requests/User.requests'
+import { RegisterRequestBody, UpdateMyProfileRequestBody } from '~/models/requests/User.requests'
 import database from './database.services'
 import { User } from '~/models/schemas/User.schema'
 import { hashPassword } from '~/utils/crypto'
@@ -239,6 +239,36 @@ class UserService {
       user,
       message: CLIENT_MESSAGE.GET_PROFILE_SUCCESS
     }
+  }
+
+  async updateMyProfile(user_id: string, payload: UpdateMyProfileRequestBody) {
+    const user = await database.users.findOneAndUpdate(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          ...payload,
+          date_of_birth: new Date(payload.date_of_birth as string)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      },
+      {
+        returnDocument: 'after',
+        projection: {
+          password: 0,
+          created_at: 0,
+          updated_at: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          verify: 0
+        }
+      }
+    )
+
+    return user
   }
 }
 

@@ -20,6 +20,7 @@ import {
   refreshTokenValidator,
   registerMiddleware,
   resetPasswordValidator,
+  updateMyProfileValidator,
   verifyForgotPasswordTokenValidator,
   verifyUserValidator
 } from '~/middlewares/users.middleware'
@@ -130,6 +131,7 @@ usersRouter.patch(
   '/update-my-profile',
   accessTokenValidator,
   verifyUserValidator,
+  updateMyProfileValidator,
   wrapRequestHandler(updateMyProfileController)
 )
 

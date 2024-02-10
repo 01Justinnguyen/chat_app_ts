@@ -46,7 +46,7 @@ export const CLIENT_MESSAGE = {
   LOCATION_MUST_BE_STRING: 'Location must be a string',
   LOCATION_LENGTH: 'Location length must be from 1 to 200',
   WEBSITE_MUST_BE_STRING: 'Website must be a string',
-  WEBSITE_LENGTH: 'Website length must be from 1 to 200',
+  WEBSITE_LENGTH: 'Website length must be from 1 to 400',
   USERNAME_MUST_BE_STRING: 'Username must be a string',
   USERNAME_INVALID:
     'Username must be 4-15 characters long and contain only letters, numbers, underscores, not only numbers',

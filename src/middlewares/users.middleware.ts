@@ -121,6 +121,47 @@ const forgotPasswordTokenSchema: ParamSchema = {
   }
 }
 
+const imageSchema: ParamSchema = {
+  optional: true,
+  isString: {
+    errorMessage: CLIENT_MESSAGE.IMAGE_URL_MUST_BE_STRING
+  },
+  isLength: {
+    options: {
+      min: 1,
+      max: 400
+    },
+    errorMessage: CLIENT_MESSAGE.IMAGE_URL_MUST_BE_STRING
+  }
+}
+
+const nameSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: CLIENT_MESSAGE.NAME_IS_REQUIRED
+  },
+  isString: {
+    errorMessage: CLIENT_MESSAGE.NAME_MUST_BE_A_STRING
+  },
+  trim: true,
+  isLength: {
+    options: {
+      min: 2,
+      max: 100
+    },
+    errorMessage: CLIENT_MESSAGE.NAME_LENGTH_MUST_BE_FROM_2_TO_100
+  }
+}
+
+const dateOfBirthSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: CLIENT_MESSAGE.DATE_OF_BIRTH_IS_REQUIRED
+  },
+  trim: true,
+  isISO8601: {
+    errorMessage: CLIENT_MESSAGE.DATE_OF_BIRTH_MUST_BE_ISO8601
+  }
+}
+
 export const loginMiddleware = validate(
   checkSchema(
     {
@@ -168,32 +209,10 @@ export const registerMiddleware = validate(
           }
         }
       },
-      name: {
-        notEmpty: {
-          errorMessage: CLIENT_MESSAGE.NAME_IS_REQUIRED
-        },
-        isString: {
-          errorMessage: CLIENT_MESSAGE.NAME_MUST_BE_A_STRING
-        },
-        trim: true,
-        isLength: {
-          options: {
-            min: 2,
-            max: 100
-          },
-          errorMessage: CLIENT_MESSAGE.NAME_LENGTH_MUST_BE_FROM_2_TO_100
-        }
-      },
+      name: nameSchema,
       password: passwordSchema,
       confirm_password: confirmPasswordSchema,
-      date_of_birth: {
-        notEmpty: {
-          errorMessage: CLIENT_MESSAGE.DATE_OF_BIRTH_IS_REQUIRED
-        },
-        isISO8601: {
-          errorMessage: CLIENT_MESSAGE.DATE_OF_BIRTH_MUST_BE_ISO8601
-        }
-      }
+      date_of_birth: dateOfBirthSchema
     },
     ['body']
   )
@@ -389,3 +408,79 @@ export const verifyUserValidator = (req: Request, res: Response, next: NextFunct
   }
   next()
 }
+
+export const updateMyProfileValidator = validate(
+  checkSchema(
+    {
+      name: {
+        ...nameSchema,
+        notEmpty: undefined,
+        optional: true
+      },
+      date_of_birth: {
+        ...dateOfBirthSchema,
+        notEmpty: undefined,
+        optional: true
+      },
+      bio: {
+        optional: true,
+        isString: {
+          errorMessage: CLIENT_MESSAGE.BIO_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 200
+          },
+          errorMessage: CLIENT_MESSAGE.BIO_LENGTH
+        }
+      },
+      location: {
+        optional: true,
+        isString: {
+          errorMessage: CLIENT_MESSAGE.LOCATION_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 200
+          },
+          errorMessage: CLIENT_MESSAGE.LOCATION_LENGTH
+        }
+      },
+      website: {
+        optional: true,
+        isString: {
+          errorMessage: CLIENT_MESSAGE.WEBSITE_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 400
+          },
+          errorMessage: CLIENT_MESSAGE.WEBSITE_LENGTH
+        }
+      },
+      username: {
+        optional: true,
+        isString: {
+          errorMessage: CLIENT_MESSAGE.USERNAME_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 50
+          },
+          errorMessage: CLIENT_MESSAGE.USERNAME_INVALID
+        }
+      },
+      avatar: imageSchema,
+      cover_photo: imageSchema
+    },
+    ['body']
+  )
+)

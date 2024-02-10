@@ -43,3 +43,14 @@ export interface ResetPasswordRequestBody extends VerifyForgotPasswordTokenReque
   password: string
   confirm_password: string
 }
+
+export interface UpdateMyProfileRequestBody {
+  name?: string
+  date_of_birth?: string
+  bio?: string
+  location?: string
+  website?: string
+  username?: string
+  avatar?: string
+  cover_photo?: string
+}
