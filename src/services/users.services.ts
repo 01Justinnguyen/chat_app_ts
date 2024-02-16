@@ -56,6 +56,7 @@ class UserService {
         ...payload,
         _id: new ObjectId(user_id),
         email_verify_token: email_verify_token,
+        username: 'user-' + user_id.slice(0, 6),
         password: hashPassword(payload.password),
         date_of_birth: new Date(payload.date_of_birth)
       })
@@ -269,6 +270,26 @@ class UserService {
     )
 
     return user
+  }
+
+  async getUserInfo(username: string) {
+    const user = await database.users.findOne(
+      { username: username },
+      {
+        projection: {
+          password: 0,
+          verify: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          created_at: 0,
+          updated_at: 0
+        }
+      }
+    )
+    if (!user) {
+      throw new ErrorWithStatus({ message: CLIENT_MESSAGE.USER_NOT_FOUND, status: HTTP_STATUS.NOT_FOUND })
+    }
+    return { user }
   }
 }
 

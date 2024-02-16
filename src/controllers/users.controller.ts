@@ -6,6 +6,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { CLIENT_MESSAGE } from '~/constants/messages'
 import {
   ForgotPasswordRequestBody,
+  GetUserInfoRequestParams,
   LoginRequestBody,
   LogoutRequestBody,
   RefreshTokenRequestBody,
@@ -151,4 +152,10 @@ export const updateMyProfileController = async (
     message: CLIENT_MESSAGE.UPDATE_ME_SUCCESS,
     user
   })
+}
+
+export const getUserInfoController = async (req: Request<GetUserInfoRequestParams>, res: Response) => {
+  const { username } = req.params
+  const user = await userService.getUserInfo(username)
+  return res.json(user)
 }
