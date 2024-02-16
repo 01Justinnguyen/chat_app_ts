@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express'
 import {
   forgotPasswordController,
   getProfileController,
+  getUserInfoController,
   loginController,
   logoutController,
   refreshTokenController,
@@ -146,5 +147,14 @@ usersRouter.patch(
   ]),
   wrapRequestHandler(updateMyProfileController)
 )
+
+/**
+ * Description: Get user info
+ * Path: /:username
+ * Method: get
+ * Header: {Authorization: Bearer <token>}
+ */
+
+usersRouter.get('/:username', accessTokenValidator, wrapRequestHandler(getUserInfoController))
 
 export default usersRouter
