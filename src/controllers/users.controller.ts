@@ -5,6 +5,7 @@ import { UserVerifyStatus } from '~/constants/enum'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { CLIENT_MESSAGE } from '~/constants/messages'
 import {
+  FollowUserRequestBody,
   ForgotPasswordRequestBody,
   GetUserInfoRequestParams,
   LoginRequestBody,
@@ -158,4 +159,19 @@ export const getUserInfoController = async (req: Request<GetUserInfoRequestParam
   const { username } = req.params
   const user = await userService.getUserInfo(username)
   return res.json(user)
+}
+
+export const followUserController = async (
+  req: Request<ParamsDictionary, any, FollowUserRequestBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { follow_user_id } = req.body
+  if (user_id === follow_user_id) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      message: CLIENT_MESSAGE.CANNOT_FOLLOW_YOURSELF
+    })
+  }
+  const result = await userService.followUser(user_id, follow_user_id)
+  return res.json(result)
 }

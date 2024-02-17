@@ -56,6 +56,10 @@ export interface UpdateMyProfileRequestBody {
   cover_photo?: string
 }
 
+export interface FollowUserRequestBody {
+  follow_user_id: string
+}
+
 export interface GetUserInfoRequestParams extends ParamsDictionary {
   username: string
 }

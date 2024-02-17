@@ -10,6 +10,7 @@ import { ObjectId } from 'mongodb'
 import { CLIENT_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
+import { Follower } from '~/models/schemas/Followers.schema'
 config()
 
 class UserService {
@@ -290,6 +291,28 @@ class UserService {
       throw new ErrorWithStatus({ message: CLIENT_MESSAGE.USER_NOT_FOUND, status: HTTP_STATUS.NOT_FOUND })
     }
     return { user }
+  }
+
+  async followUser(user_id: string, follow_user_id: string) {
+    const isExistFollowedUser = await database.followers.findOne({
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(follow_user_id)
+    })
+
+    if (!isExistFollowedUser) {
+      await database.followers.insertOne(
+        new Follower({
+          user_id: new ObjectId(user_id),
+          followed_user_id: new ObjectId(follow_user_id)
+        })
+      )
+      return {
+        message: CLIENT_MESSAGE.FOLLOW_SUCCESS
+      }
+    }
+    return {
+      message: CLIENT_MESSAGE.FOLLOWED
+    }
   }
 }
 

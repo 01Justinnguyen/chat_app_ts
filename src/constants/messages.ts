@@ -65,5 +65,7 @@ export const CLIENT_MESSAGE = {
   GMAIL_NOT_VERIFIED: 'Gmail not verified',
   UPLOAD_SUCCESS: 'Upload success',
   REFRESH_TOKEN_SUCCESS: 'Refresh token success',
-  GET_VIDEO_STATUS_SUCCESS: 'Get video status success'
+  GET_VIDEO_STATUS_SUCCESS: 'Get video status success',
+  ID_CANNOT_OVERLAP: 'Id cannot overlap',
+  CANNOT_FOLLOW_YOURSELF: 'Cannot follow yourself'
 } as const
