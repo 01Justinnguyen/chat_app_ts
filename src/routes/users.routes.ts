@@ -10,6 +10,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
+  unFollowUserController,
   updateMyProfileController,
   verifyEmailTokenController,
   verifyForgotPasswordTokenController
@@ -24,6 +25,7 @@ import {
   refreshTokenValidator,
   registerMiddleware,
   resetPasswordValidator,
+  unFollowUserMiddleware,
   updateMyProfileValidator,
   verifyForgotPasswordTokenValidator,
   verifyUserValidator
@@ -173,6 +175,22 @@ usersRouter.post(
   verifyUserValidator,
   followUserMiddleware,
   wrapRequestHandler(followUserController)
+)
+
+/**
+ * Description: UnFollow user
+ * Path: /follow/:user_id
+ * Method: DELETE
+ * Header: {Authorization: Bearer <token>}
+ * Body: {user_id: string}
+ */
+
+usersRouter.delete(
+  '/follow/:user_id',
+  accessTokenValidator,
+  verifyUserValidator,
+  unFollowUserMiddleware,
+  wrapRequestHandler(unFollowUserController)
 )
 
 export default usersRouter
