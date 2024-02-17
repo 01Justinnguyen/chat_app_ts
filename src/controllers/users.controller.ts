@@ -14,6 +14,7 @@ import {
   RegisterRequestBody,
   ResetPasswordRequestBody,
   TokenPayload,
+  UnFollowUserRequestParams,
   UpdateMyProfileRequestBody,
   VerifyEmailRequestBody,
   VerifyForgotPasswordTokenRequestBody
@@ -173,5 +174,17 @@ export const followUserController = async (
     })
   }
   const result = await userService.followUser(user_id, follow_user_id)
+  return res.json(result)
+}
+
+export const unFollowUserController = async (req: Request<UnFollowUserRequestParams>, res: Response) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { user_id: followed_user_id } = req.params
+  if (user_id === followed_user_id) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      message: CLIENT_MESSAGE.ID_CANNOT_OVERLAP
+    })
+  }
+  const result = await userService.unFollowUser(user_id, followed_user_id)
   return res.json(result)
 }
