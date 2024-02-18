@@ -11,9 +11,10 @@ import { validate } from '~/utils/validator'
 import jwt, { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
 import { ObjectId } from 'mongodb'
-import { TokenPayload } from '~/models/requests/User.requests'
+import { ChangePasswordRequestBody, TokenPayload } from '~/models/requests/User.requests'
 import { UserVerifyStatus } from '~/constants/enum'
 import { RegexUserName } from '~/constants/regex'
+import { ParamsDictionary } from 'express-serve-static-core'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -533,5 +534,37 @@ export const unFollowUserMiddleware = validate(
       user_id: userIdSchema
     },
     ['params']
+  )
+)
+
+export const changePasswordMiddleware = validate(
+  checkSchema(
+    {
+      old_password: {
+        ...passwordSchema,
+        custom: {
+          options: async (value: string, { req }) => {
+            const { user_id } = (req as Request).decoded_authorization as TokenPayload
+            const { old_password } = (req as Request<ParamsDictionary, any, ChangePasswordRequestBody>).body
+
+            if (hashPassword(value) === hashPassword(old_password)) {
+              throw new Error(CLIENT_MESSAGE.CANNOT_SAME_PASSWORD)
+            }
+
+            const isEmptyUserPassword = await database.users.findOne({
+              _id: new ObjectId(user_id),
+              password: hashPassword(value)
+            })
+
+            if (!isEmptyUserPassword) {
+              throw new Error(CLIENT_MESSAGE.OLD_PASSWORD_NOT_MATCH)
+            }
+          }
+        }
+      },
+      password: passwordSchema,
+      confirm_password: confirmPasswordSchema
+    },
+    ['body']
   )
 )
