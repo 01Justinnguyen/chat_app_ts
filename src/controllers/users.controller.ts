@@ -5,6 +5,7 @@ import { UserVerifyStatus } from '~/constants/enum'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { CLIENT_MESSAGE } from '~/constants/messages'
 import {
+  ChangePasswordRequestBody,
   FollowUserRequestBody,
   ForgotPasswordRequestBody,
   GetUserInfoRequestParams,
@@ -22,6 +23,7 @@ import {
 import { User } from '~/models/schemas/User.schema'
 import database from '~/services/database.services'
 import userService from '~/services/users.services'
+import { hashPassword } from '~/utils/crypto'
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterRequestBody>, res: Response) => {
   const result = await userService.register(req.body)
@@ -186,5 +188,15 @@ export const unFollowUserController = async (req: Request<UnFollowUserRequestPar
     })
   }
   const result = await userService.unFollowUser(user_id, followed_user_id)
+  return res.json(result)
+}
+
+export const changePasswordController = async (
+  req: Request<ParamsDictionary, any, ChangePasswordRequestBody>,
+  res: Response
+) => {
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { password } = req.body
+  const result = await userService.changePassword(user_id, password)
   return res.json(result)
 }
