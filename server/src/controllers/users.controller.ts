@@ -1,3 +1,4 @@
+import { config } from 'dotenv'
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
@@ -24,6 +25,7 @@ import { User } from '~/models/schemas/User.schema'
 import database from '~/services/database.services'
 import userService from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto'
+config()
 
 export const registerController = async (req: Request<ParamsDictionary, any, RegisterRequestBody>, res: Response) => {
   const result = await userService.register(req.body)
@@ -199,4 +201,11 @@ export const changePasswordController = async (
   const { password } = req.body
   const result = await userService.changePassword(user_id, password)
   return res.json(result)
+}
+
+export const loginOauthController = async (req: Request, res: Response) => {
+  const { code } = req.query
+  const result = await userService.loginOauth(code as string)
+  const urlClientRedirect = `${process.env.GOOGLE_CLIENT_REDIRECT_URI}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&newUser=${result.newUser}&verify=${result.verify}`
+  return res.redirect(urlClientRedirect)
 }
