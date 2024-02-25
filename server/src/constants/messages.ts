@@ -68,5 +68,6 @@ export const CLIENT_MESSAGE = {
   REFRESH_TOKEN_SUCCESS: 'Refresh token success',
   GET_VIDEO_STATUS_SUCCESS: 'Get video status success',
   ID_CANNOT_OVERLAP: 'Id cannot overlap',
-  CANNOT_FOLLOW_YOURSELF: 'Cannot follow yourself'
+  CANNOT_FOLLOW_YOURSELF: 'Cannot follow yourself',
+  FILE_IS_EMPTY: 'File is empty'
 } as const
