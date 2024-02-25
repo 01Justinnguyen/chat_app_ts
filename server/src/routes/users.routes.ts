@@ -16,7 +16,7 @@ import {
   updateMyProfileController,
   verifyEmailTokenController,
   verifyForgotPasswordTokenController
-} from '~/controllers/users.controller'
+} from '~/controllers/users.controllers'
 import { filterMiddleware } from '~/middlewares/common.middlewares'
 import {
   accessTokenValidator,
