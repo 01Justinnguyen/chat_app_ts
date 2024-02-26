@@ -6,6 +6,7 @@ import database from './services/database.services'
 import { defaultErrorsHandler } from './middlewares/errors.middleware'
 import mediaRoutes from './routes/media.routes'
 import { initFolderUploads } from './utils/file'
+
 config()
 const app = express()
 const PORT = process.env.PORT || 8888
