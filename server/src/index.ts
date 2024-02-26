@@ -1,10 +1,12 @@
-import express, { NextFunction, Request, Response } from 'express'
-import { config } from 'dotenv'
 import cors from 'cors'
-import usersRouter from './routes/users.routes'
-import database from './services/database.services'
+import { config } from 'dotenv'
+import express from 'express'
+import path from 'path'
+import { directory } from './constants/dir'
 import { defaultErrorsHandler } from './middlewares/errors.middleware'
 import mediaRoutes from './routes/media.routes'
+import usersRouter from './routes/users.routes'
+import database from './services/database.services'
 import { initFolderUploads } from './utils/file'
 
 config()
@@ -27,6 +29,7 @@ database.connect()
 
 app.use('/users', usersRouter)
 app.use('/medias', mediaRoutes)
+app.use('/static', express.static(path.resolve(directory.UPLOAD_DIR)))
 
 app.use(defaultErrorsHandler)
 
