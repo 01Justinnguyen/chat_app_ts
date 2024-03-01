@@ -1,1 +1,1 @@
-# Hello everyone !!! This is my project 😊😊😊
+# Hello everyone !!! This is my project
