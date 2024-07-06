@@ -1,1 +1,1 @@
-# Hello everyone !!! This is my chat app project
+# Hello everyone. This is my chat app project!!! 
